@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDJSON Prototype</title>
+    <link href="/brixi.css" rel="stylesheet">
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-grey-200 w-screen h-screen m-0" style="overflow-x: hidden;">
+    <p class="progress bg-grey-200 block w-full text-center font-xl line-normal py-1 m-0" style="position: fixed;top: 0;z-index: 999999;">Initializing. Please wait.</p>
+    <main class="w-full mx-auto p-1.5 max-w-full mt-4" style="display: grid;grid-template-rows: 1fr;gap: 1rem;width: 1346px;content-visibility:auto;"></main>
+    <p class="stop bg-grey-200 w-full text-center font-xl line-normal pb-2" style="display: none;">We stopped rendering new objects. The browser doesn't like it when we try to render tens of thousands of elements.</p>
+    <script type="module">
+        import {html, render} from 'https://unpkg.com/lit-html?module'
+        const container = document.body.querySelector("main");
+        const progress = document.body.querySelector(".progress");
+        const stopEl = document.body.querySelector(".stop");
+        const worker = new Worker("/ndjson-2/ndjson.js");
+        const rows = [[]];
+        let processed = 0;
+        const isFF = 'MozAppearance' in document.documentElement.style;
+
+        function processCard(card){
+            processed++;
+            progress.innerText = `${processed} of 31000 cards have been processed.`;
+            if (!isFF){
+                if (processed > 5000){
+                    return;
+                } else if (processed === 5000){
+                    stopEl.style.display = "block";
+                }
+            }
+            const lastRow = rows[rows.length - 1];
+            if (lastRow.length < 6){
+                lastRow.push(card.name);
+            } else {
+                const newRow = [card.name];
+                rows.push(newRow);
+            }
+            renderCards();
+        }
+
+        function renderCards(){
+            const view = html`
+                ${rows.map(row => {
+                    return html`
+                        <div class="w-full" style="display:grid;grid-template-columns:repeat(6, 1fr);gap:1rem;content-visibility:auto;contain-intrinsic-size:70px;">
+                            ${row.map(card => {
+                                return html`
+                                    <div class="px-1 py-0.75 radius-0.25 border-1 border-solid border-grey-300 bg-white shadow-sm text-center" style="animation:fadeIn 300ms 0ms var(--ease-in);" flex="justify-center items-center">${card}</div>
+                                `;
+                            })}
+                        </div>
+                    `;
+                })}
+            `;
+            render(view, container);
+        }
+
+        worker.onmessage = (e) => {
+            switch ( e.data.type){
+                case "done":
+                    progress.innerText = `All ${processed} cards have been processed.`;
+                    break;
+                default:
+                    processCard(e.data.card);
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>

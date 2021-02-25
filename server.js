@@ -16,7 +16,7 @@ app.get('/json', (req, res) => {
 });
 
 app.get('/ndjson', (req, res) => {
-    res.sendFile(path.join(public, "json", 'index.html'));
+    res.sendFile(path.join(public, "ndjson-2", 'index.html'));
 });
 
 app.listen(port);
