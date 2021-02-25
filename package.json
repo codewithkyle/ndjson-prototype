@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "test": "node ./server.js",
+    "brixi": "brixi"
+  },
+  "dependencies": {
+    "brixi": "^0.3.1",
+    "express": "^4.17.1"
+  }
+}

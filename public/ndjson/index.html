@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NDJSON Prototype</title>
+    <link href="/brixi.css" rel="stylesheet">
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-grey-200 w-screen m-0" style="overflow-x:hidden;">
+    <p class="progress bg-grey-200 block w-full text-center font-xl line-normal py-0.5" style="position: sticky;top: 0;z-index: 999999;"></p>
+    <main class="w-full p-1" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(250px, 1fr));gap:1rem;content-visibility:auto;"></main>
+    <p class="progress bg-grey-200 w-full text-center font-xl line-normal py-0.5 stop" style="display: none;">We stopped rendering new objects. The browser doesn't like it when we append tens of thousands of elements to the body.</p>
+    <script>
+        const container = document.body.querySelector("main");
+        const progress = document.body.querySelector(".progress");
+        const stopEl = document.body.querySelector(".stop");
+        const worker = new Worker("/ndjson/ndjson.js");
+        let rendered = 0;
+        let received = 0;
+        let total = 0;
+        worker.onmessage = (e) => {
+            switch ( e.data.type){
+                case "done":
+                    progress.innerText = `All 31,000 JSON objects have been processed`;
+                    break;
+                case "length":
+                    total = e.data.length;
+                    break;
+                default:
+                    const data = e.data.data;
+                    received += JSON.stringify(data).length;
+                    progress.innerText = `${Math.ceil((received / total) * 100)}% processed`;
+                    if (rendered < 5000){
+                        rendered++;
+                        const card = document.createElement("div");
+                        card.innerHTML = data.name;
+                        card.className = "px-1 py-0.75 radius-0.25 border-1 border-solid border-grey-300 bg-white shadow-sm text-center";
+                        card.style.animation = "fadeIn 300ms 0ms var(--ease-in)";
+                        card.setAttribute("flex", "items-center justify-center");
+                        container.appendChild(card);
+                        if (rendered === 1000){
+                            stopEl.style.display = "block";
+                        }
+                    }
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>
