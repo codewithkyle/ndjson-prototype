@@ -29,7 +29,8 @@ class IDBWorker {
             this.workerPool[uid].busy = false;
             if (this.workerPool[uid].status === "INSERTING"){
                 delete this.workerPool[uid];
-                this.send("ingest-finished");
+                console.log("we done");
+                this.send("unpack-finished");
             }
         } else {
             this.insertData(uid, keyPath, table);
@@ -43,7 +44,7 @@ class IDBWorker {
                 this.send("download-finished");
                 if (worker){
                     worker.terminate();
-                    this.workerPool[e.data.uid].status === "INSERTING";
+                    this.workerPool[e.data.uid].status = "INSERTING";
                     if (!busy){
                         this.insertData();
                     }

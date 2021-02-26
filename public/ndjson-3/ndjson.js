@@ -13,20 +13,16 @@ function send(obj){
         uid: workerUid,
     });
 }
-function processJSON(){
+function processJSON(objects){
     return new Promise(resolve => {
-        const results = buffer.split("\n");
         while(true){
             try {
-                const obj = JSON.parse(results[0]);
-                send(obj);
-                buffer = buffer.replace(/.*\n+/, "");
-                results.splice(0, 1);
-                if (!results.length){
+                send(JSON.parse(objects.pop()));
+                if (!objects.length){
                     break;
                 }
             } catch(e) {
-                break;
+                console.error(e);
             }
         }
         resolve();
@@ -36,7 +32,14 @@ async function processText({ done, value }) {
     if (!done) {
         const chunk = decoder.decode(value);
         buffer += chunk;
-        await processJSON();
+        const objects = buffer.split("\n");
+        buffer = objects.pop();
+        if (objects.length){
+            await processJSON(objects.reverse());
+        }
+    } else if (buffer.length){
+        const objects = buffer.split("\n");
+        await processJSON(objects.reverse());
     }
     return done;
 }
