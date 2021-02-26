@@ -1,7 +1,6 @@
 let reader = null;
 const decoder = new TextDecoder();
 let buffer = "";
-const ids = {};
 let workerUid = null;
 
 function send(obj){
@@ -20,10 +19,7 @@ function processJSON(){
         while(true){
             try {
                 const obj = JSON.parse(results[0]);
-                if (!(obj.id in ids)){
-                    ids[obj.id] = obj.name;
-                    send(obj);
-                }
+                send(obj);
                 buffer = buffer.replace(/.*\n+/, "");
                 results.splice(0, 1);
                 if (!results.length){

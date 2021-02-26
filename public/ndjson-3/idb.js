@@ -11,33 +11,50 @@ class IDBWorker {
         this.main();
     }
 
-    async insertData(uid){
-        const { worker, table, rows } = this.workerPool[uid];
-        const keyPath = this.getTableKey(table);
-        for (const row of rows){
+    async insertData(uid, keyPath = null, table = null){
+        this.workerPool[uid].busy = true;
+        if (keyPath === null || table === null){
+            table = this.workerPool[uid].table;
+            keyPath = this.getTableKey(table);
+        }
+        const row = this.workerPool[uid].rows.splice(0, 1)[0];
+        if (typeof row === "object"){
             const exists = await this.db.getFromIndex(table, keyPath, row[keyPath]);
             if (!exists){
                 await this.db.put(table, row);
             }
-            this.send("tick");
+            this.send("unpack-tick");
         }
-        delete this.workerPool[uid];
-        this.send("ingest-finished");
+        if (!this.workerPool[uid].rows.length){
+            this.workerPool[uid].busy = false;
+            if (this.workerPool[uid].status === "INSERTING"){
+                delete this.workerPool[uid];
+                this.send("ingest-finished");
+            }
+        } else {
+            this.insertData(uid, keyPath, table);
+        }
     }
 
     async workerInbox(e){
-        const { worker, table, rows } = this.workerPool[e.data.uid];
+        const { worker, table, rows, busy } = this.workerPool[e.data.uid];
         switch (e.data.type){
             case "done":
                 this.send("download-finished");
                 if (worker){
                     worker.terminate();
-                    this.insertData(e.data.uid);
+                    this.workerPool[e.data.uid].status === "INSERTING";
+                    if (!busy){
+                        this.insertData();
+                    }
                 }
                 break;
             default:
                 rows.push(e.data.result);
-                this.send("tick");
+                this.send("download-tick");
+                if (!busy){
+                    this.insertData(e.data.uid);
+                }
                 break;
         }
     }
@@ -139,6 +156,8 @@ class IDBWorker {
             worker: worker,
             table: table,
             rows: [],
+            busy: false,
+            status: "PARSING",
         };
         worker.onmessage = this.workerInbox.bind(this);
         worker.postMessage({
