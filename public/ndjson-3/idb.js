@@ -11,12 +11,17 @@ class IDBWorker {
         this.main();
     }
 
-    async insertData({ worker, table, rows }){
+    async insertData(uid){
+        const { worker, table, rows } = this.workerPool[uid];
+        const keyPath = this.getTableKey(table);
         for (const row of rows){
-            await this.db.put(table, row);
+            const exists = await this.db.getFromIndex(table, keyPath, row[keyPath]);
+            if (!exists){
+                await this.db.put(table, row);
+            }
             this.send("tick");
         }
-        delete this.workerPool[e.data.uid];
+        delete this.workerPool[uid];
         this.send("insert-finished");
     }
 
@@ -27,7 +32,7 @@ class IDBWorker {
                 this.send("download-finished");
                 if (worker){
                     worker.terminate();
-                    this.insertData(this.workerPool[e.data.uid]);
+                    this.insertData(e.data.uid);
                 }
                 break;
             default:
