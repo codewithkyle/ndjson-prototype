@@ -64,7 +64,6 @@
                             }
                         });
                     } else if (data === 310000){
-                        window.onbeforeunload = ()=>{};
                         statusContainer.remove();
                     }
                     break;
@@ -82,11 +81,9 @@
                     }, 3000);
                     break;
                 case "unpack-finished":
-                    console.log("finisehd");
                     setTimeout(()=>{
                         statusContainer.remove();
                     }, 3000);
-                    window.onbeforeunload = ()=>{};
                     break;
                 case "ready":
                     worker.postMessage({
@@ -115,12 +112,6 @@
                 }
             }
         };
-        window.onbeforeunload = confirmExit;
-        function confirmExit(e) {
-            const msg = "You have attempted to leave this page before the the application has finished installing. If you leave all progress wil be lost. Are you sure you want to leave?";
-            e.returnValue = msg;
-            return msg;
-        }
     </script>
 </body>
 </html>

@@ -29,7 +29,6 @@ class IDBWorker {
             this.workerPool[uid].busy = false;
             if (this.workerPool[uid].status === "INSERTING"){
                 delete this.workerPool[uid];
-                console.log("we done");
                 this.send("unpack-finished");
             }
         } else {
