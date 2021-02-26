@@ -1,34 +1,42 @@
 let reader = null;
 const decoder = new TextDecoder();
 let buffer = "";
+const ids = {};
 
-async function send(card){
+function send(card){
     self.postMessage({
         type: "render",
         card: card,
     });
 }
-function processJSON(){
-    const result = buffer.split("\n");
-    while(true){
-        try {
-            const obj = JSON.parse(result[0]);
-            if (!Object.keys(obj).length){
-                console.log("Something happened", obj);
+async function processJSON(){
+    return new Promise(resolve => {
+        const results = buffer.split("\n");
+        while(true){
+            try {
+                const obj = JSON.parse(results[0]);
+                if (!(obj.id in ids)){
+                    ids[obj.id] = obj.name;
+                    send(obj);
+                    processed++;
+                } else {
+                    console.log("skipping duplicate object");
+                }
+                buffer = buffer.replace(/.*\n+/, "");
+                results.splice(0, 1);
+                if (!results.length){
+                    console.log("buffer is empty");
+                    break;
+                }
+            } catch(e) {
+                console.log("buffer only contains a partial object");
                 break;
             }
-            buffer = buffer.replace(/.*\n/, "");
-            result.splice(0, 1);
-            send(obj);
-            if (!result.length){
-                break;
-            }
-        } catch(e) {
-            break;
         }
-    }
+        resolve();
+    });
 }
-function processText({ done, value }) {
+async function processText({ done, value }) {
     if (done) {
         self.postMessage({
             type: "done",
@@ -37,7 +45,7 @@ function processText({ done, value }) {
     }
     const chunk = decoder.decode(value);
     buffer += chunk;
-    processJSON();
+    await processJSON();
     return reader.read().then(processText);
 }
 function readStream(stream) {

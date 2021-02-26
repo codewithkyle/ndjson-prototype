@@ -32,7 +32,7 @@
         worker.onmessage = (e) => {
             switch ( e.data.type){
                 case "done":
-                    progress.innerText = `All 31,000 JSON objects have been processed`;
+                    progress.innerText = `All 310,000 JSON objects have been processed`;
                     break;
                 case "length":
                     total = e.data.length;
