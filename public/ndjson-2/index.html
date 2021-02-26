@@ -29,17 +29,14 @@
         const worker = new Worker("/ndjson-2/ndjson.js");
         const rows = [[]];
         let processed = 0;
-        const isFF = 'MozAppearance' in document.documentElement.style;
 
         function processCard(card){
             processed++;
             progress.innerText = `${processed} of 310000 cards have been processed.`;
-            if (!isFF){
-                if (processed > 5000){
-                    return;
-                } else if (processed === 5000){
-                    stopEl.style.display = "block";
-                }
+            if (processed > 1000){
+                return;
+            } else if (processed === 1000){
+                stopEl.style.display = "block";
             }
             const lastRow = rows[rows.length - 1];
             if (lastRow.length < 6){
@@ -71,6 +68,7 @@
         worker.onmessage = (e) => {
             switch ( e.data.type){
                 case "done":
+                    worker.terminate();
                     progress.innerText = `All ${processed} cards have been processed.`;
                     break;
                 default:

@@ -9,7 +9,7 @@ function send(card){
         card: card,
     });
 }
-async function processJSON(){
+function processJSON(){
     return new Promise(resolve => {
         const results = buffer.split("\n");
         while(true){
@@ -18,18 +18,13 @@ async function processJSON(){
                 if (!(obj.id in ids)){
                     ids[obj.id] = obj.name;
                     send(obj);
-                    processed++;
-                } else {
-                    console.log("skipping duplicate object");
                 }
                 buffer = buffer.replace(/.*\n+/, "");
                 results.splice(0, 1);
                 if (!results.length){
-                    console.log("buffer is empty");
                     break;
                 }
             } catch(e) {
-                console.log("buffer only contains a partial object");
                 break;
             }
         }
@@ -37,22 +32,25 @@ async function processJSON(){
     });
 }
 async function processText({ done, value }) {
-    if (done) {
-        self.postMessage({
-            type: "done",
-        });
-        return;
+    if (!done) {
+        const chunk = decoder.decode(value);
+        buffer += chunk;
+        await processJSON();
     }
-    const chunk = decoder.decode(value);
-    buffer += chunk;
-    await processJSON();
-    return reader.read().then(processText);
+    return done;
 }
-function readStream(stream) {
+async function readStream(stream) {
     reader = stream.getReader();
-    reader.read().then(processText);
+    let done = false;
+    while (!done){
+        const nextChunk = await reader.read();
+        done = await processText(nextChunk);
+    }
 }
 (async () => {
     const response = await fetch("/data.ndjson");
-    readStream(response.body);
+    await readStream(response.body);
+    self.postMessage({
+        type: "done",
+    });
 })();
