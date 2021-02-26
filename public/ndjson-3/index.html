@@ -53,11 +53,13 @@
                     } else if (data === 310000){
                         window.onbeforeunload = ()=>{};
                         statusEl.remove();
+                    } else {
+                        console.log(data);
                     }
                     break;
                 case "tick":
                     count++;
-                    progress.innerHTML = `${Math.round(count / 310000 * 100)}%`;
+                    progress.innerHTML = `${Math.floor(count / 310000 * 100)}%`;
                     break;
                 case "download-finished":
                     count = 0;
@@ -65,7 +67,7 @@
                     progress.innerHTML = `0%`;
                     break;
                 case "ingest-finished":
-                    statusEl.innerHTML = "Everything has been downloaded and unpacked!";
+                    progressText.innerHTML = "Everything has been downloaded and unpacked!";
                     setTimeout(()=>{
                         statusEl.remove();
                     }, 5000);

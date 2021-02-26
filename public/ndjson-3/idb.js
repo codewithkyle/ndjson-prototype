@@ -22,7 +22,7 @@ class IDBWorker {
             this.send("tick");
         }
         delete this.workerPool[uid];
-        this.send("insert-finished");
+        this.send("ingest-finished");
     }
 
     async workerInbox(e){
