@@ -1,0 +1,18 @@
+{
+	"version": 1,
+	"tables": [
+		{
+			"name": "cards",
+			"keyPath": "id",
+			"columns": [
+				{
+					"key": "id",
+					"unique": true
+				},
+				{
+					"key": "name"
+				}
+			]
+		}
+	]
+}
