@@ -16,7 +16,7 @@ class IDBWorker {
             table = this.workerPool[uid].table;
             keyPath = this.getTableKey(table);
         }
-        const row = this.workerPool[uid].rows.splice(0, 1)[0];
+        const row = this.workerPool[uid].rows.splice(0, 1)?.[0] ?? null;
         if (typeof row === "object"){
             const exists = await this.db.getFromIndex(table, keyPath, row[keyPath]);
             if (!exists){
@@ -27,8 +27,8 @@ class IDBWorker {
         if (!this.workerPool[uid].rows.length){
             this.workerPool[uid].busy = false;
             if (this.workerPool[uid].status === "INSERTING"){
-                delete this.workerPool[uid];
                 this.send("unpack-finished");
+                delete this.workerPool[uid];
             }
         } else {
             this.insertData(uid, keyPath, table);
@@ -40,12 +40,13 @@ class IDBWorker {
         switch (e.data.type){
             case "done":
                 this.send("download-finished");
-                if (worker){
-                    worker?.terminate();
-                    this.workerPool[e.data.uid].status = "INSERTING";
-                    if (!busy){
-                        this.insertData();
-                    }
+                if (typeof worker.terminate !== "undefined"){
+                    worker.terminate();
+                }
+                this.workerPool[e.data.uid].worker = null;
+                this.workerPool[e.data.uid].status = "INSERTING";
+                if (!busy){
+                    this.insertData();
                 }
                 break;
             default:
@@ -165,8 +166,6 @@ class IDBWorker {
                 uid: workerUid,
             });
         } catch (e){
-            console.error(e);
-            console.log("Using class fallback");
             importScripts("/ndjson-3/stream-parser.js");
             const parser = new StreamParser(route, workerUid, this.workerInbox.bind(this));
             this.workerPool[workerUid] = {

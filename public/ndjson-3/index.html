@@ -284,7 +284,7 @@
     </div>
     <p 
         class="unpack-notice line-normal px-1 py-0.75 bg-danger-100 border-1 border-solid border-danger-500 m-0 font-danger-800 text-center" 
-        style="position: fixed;top: 0;left: 50%;transform: translate(-50%, -1px);border-radius: 0 0 0.5rem 0.5rem;box-shadow: 0 0 8px rgba(0,0,0,0.05);z-index: 1000;max-width: calc(100vw - 4rem);"
+        style="position: fixed;top: 0;left: 50%;transform: translate(-50%, -150%);border-radius: 0 0 0.5rem 0.5rem;box-shadow: 0 0 8px rgba(0,0,0,0.05);z-index: 1000;max-width: calc(100vw - 4rem);opacity: 1;transition: all 150ms var(--ease-in-out);"
     >Search results will be incomplete until every card has been unpacked.</p>
     <script type="module">
         import {html, render} from 'https://unpkg.com/lit-html?module'
@@ -328,9 +328,6 @@
                 case "unpack-tick":
                     unpackTicks++;
                     let unpackPercent = Math.floor(unpackTicks / 310000 * 100);
-                    if (unpackPercent === 0){
-                        unpackPercent = 1;
-                    }
                     unpackProgress.innerHTML = `${unpackPercent}%`;
                     break;
                 case "download-finished":
@@ -349,6 +346,7 @@
                         if (data < 310000 && !workerStarted){
                             downloadTracker.style.opacity = "1";
                             unpackTracker.style.opacity = "1";
+                            unpackNotice.style.transform = "translate(-50%, -1px)";
                             workerStarted = true;
                             send(
                                 "ingest",
