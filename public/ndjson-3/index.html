@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NDJSON Prototype</title>
     <link href="/brixi.css" rel="stylesheet">
+    <link href="/buttons.css" rel="stylesheet">
+    <link href="/skeleton.css" rel="stylesheet">
     <style>
         .spin{
             animation: spin 300ms linear infinite;
@@ -18,18 +20,109 @@
                 transform: rotate(360deg);
             }
         }
+        .search{
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            height: 64px;
+            border: 1px solid transparent;
+            transition: all 150ms var(--ease-in-out);
+            font-size: 36px;
+            background: transparent;
+            outline: none;
+            color: var(--grey-800);
+            border-radius: 0.5rem;
+        }
+        .search::placeholder{
+            color: var(--grey-500);
+        }
+        .search:hover,
+        .search:focus{
+            border-color: var(--grey-400);
+        }
+        .card-img{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            user-select: none;
+            opacity: 0;
+            transition: all 150ms var(--ease-in-out);
+        }
+        .card{
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            aspect-ratio: 73/102;
+            background-color: var(--white);
+            border-radius: 0.5rem;
+            cursor: zoom-in;
+            transition: all 150ms var(--ease-out);
+        }
+        .card:hover,
+        .card:focus-visible{
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+            transition: all 300ms var(--ease-in);
+        }
+        .modal{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 99999;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: all 0ms 0ms linear;
+        }
+        .modal.visible{
+            opacity: 1;
+            visibility: visible;
+            pointer-events: all;
+            transition: all 150ms var(--ease-in-out);
+        }
+        .modal-backdrop{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+        }
+        .big-img{
+            width: 100%;
+            max-width: calc(100vw - 2rem);
+            max-width: 512px;
+            aspect-ratio: 149/208;
+            filter: drop-shadow(0 4px 16px rgba(0,0,0,0.3));
+            position: absolute;
+        }
+        *{
+            box-sizing: border-box;
+        }
     </style>
 </head>
-<body class="bg-grey-200 w-screen h-screen m-0" flex="items-center justify-center" style="overflow-x: hidden;">
-    <div class="status-tracker" style="position: fixed;top: 1rem;right: 1rem;">
-        <p class="download-tracker m-0 bg-white p-1 radius-0.5 border-1 border-solid border-grey-500 shadow-sm text-center line-normal mb-1" style="display: none;align-items: center;width: 235px;">
+<body class="bg-grey-200 w-screen h-screen m-0" style="overflow-x: hidden;">
+    <div class="status-tracker" style="position: fixed;top: 1rem;right: 1rem;z-index: 2000;">
+        <p class="download-tracker m-0 bg-white p-1 radius-0.5 border-1 border-solid border-grey-500 shadow-sm text-center line-normal mb-1" style="display: flex;align-items: center;width: 275px;opacity: 0;transition: all 150ms var(--ease-in-out);">
             <i class="font-grey-700 spin" style="width: 36px;height: 36px;" flex="items-center justify-center">
                 <svg style="width: 24px;height: 24px;" aria-hidden="true" focusable="false" data-prefix="fad" data-icon="spinner-third" class="svg-inline--fa fa-spinner-third fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g class="fa-group"><path class="fa-secondary" fill="currentColor" d="M478.71 364.58zm-22 6.11l-27.83-15.9a15.92 15.92 0 0 1-6.94-19.2A184 184 0 1 1 256 72c5.89 0 11.71.29 17.46.83-.74-.07-1.48-.15-2.23-.21-8.49-.69-15.23-7.31-15.23-15.83v-32a16 16 0 0 1 15.34-16C266.24 8.46 261.18 8 256 8 119 8 8 119 8 256s111 248 248 248c98 0 182.42-56.95 222.71-139.42-4.13 7.86-14.23 10.55-22 6.11z" opacity="0.4"></path><path class="fa-primary" fill="currentColor" d="M271.23 72.62c-8.49-.69-15.23-7.31-15.23-15.83V24.73c0-9.11 7.67-16.78 16.77-16.17C401.92 17.18 504 124.67 504 256a246 246 0 0 1-25 108.24c-4 8.17-14.37 11-22.26 6.45l-27.84-15.9c-7.41-4.23-9.83-13.35-6.2-21.07A182.53 182.53 0 0 0 440 256c0-96.49-74.27-175.63-168.77-183.38z"></path></g></svg>
             </i>
             <span class="inline-block ml-0.5 mr-0.25">Downloading cards</span>
             (<span class="download-progress inline-block font-success-700">0%</span>)
         </p>
-        <p class="unpack-tracker m-0 bg-white p-1 radius-0.5 border-1 border-solid border-grey-500 shadow-sm text-center line-normal" style="display: none;align-items: center;width: 235px;">
+        <p class="unpack-tracker m-0 bg-white p-1 radius-0.5 border-1 border-solid border-grey-500 shadow-sm text-center line-normal" style="display: flex;align-items: center;width: 275px;opacity: 0;transition: all 150ms var(--ease-in-out);">
             <i class="font-grey-700 spin" style="width: 36px;height: 36px;" flex="items-center justify-center">
                 <svg style="width: 24px;height: 24px;" aria-hidden="true" focusable="false" data-prefix="fad" data-icon="spinner-third" class="svg-inline--fa fa-spinner-third fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g class="fa-group"><path class="fa-secondary" fill="currentColor" d="M478.71 364.58zm-22 6.11l-27.83-15.9a15.92 15.92 0 0 1-6.94-19.2A184 184 0 1 1 256 72c5.89 0 11.71.29 17.46.83-.74-.07-1.48-.15-2.23-.21-8.49-.69-15.23-7.31-15.23-15.83v-32a16 16 0 0 1 15.34-16C266.24 8.46 261.18 8 256 8 119 8 8 119 8 256s111 248 248 248c98 0 182.42-56.95 222.71-139.42-4.13 7.86-14.23 10.55-22 6.11z" opacity="0.4"></path><path class="fa-primary" fill="currentColor" d="M271.23 72.62c-8.49-.69-15.23-7.31-15.23-15.83V24.73c0-9.11 7.67-16.78 16.77-16.17C401.92 17.18 504 124.67 504 256a246 246 0 0 1-25 108.24c-4 8.17-14.37 11-22.26 6.45l-27.84-15.9c-7.41-4.23-9.83-13.35-6.2-21.07A182.53 182.53 0 0 0 440 256c0-96.49-74.27-175.63-168.77-183.38z"></path></g></svg>
             </i>
@@ -37,6 +130,67 @@
             (<span class="unpack-progress inline-block font-success-700">0%</span>)
         </p>
     </div>
+    <main class="max-w-full mx-auto" style="padding: 8rem 1rem 0rem;width: 1280px;">
+        <input class="search mb-4" type="search" placeholder="Search cards...">
+        <div class="w-full card-container text-center font-xl font-grey-700" style="display: grid;gap: 1rem;grid-template-columns: repeat(5, minmax(150px, 1fr));">
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                <div class="skeleton w-full h-full radius-0.25"></div>
+            </div>
+        </div>
+    </main>
+    <div class="actions block text-center pt-3 pb-4"></div>
+    <div class="modal">
+        <div class="modal-backdrop"></div>
+        <i class="font-grey-100 spin" flex="items-center justify-center">
+            <svg style="width: 32px;height: 32px;" aria-hidden="true" focusable="false" data-prefix="fad" data-icon="spinner-third" class="svg-inline--fa fa-spinner-third fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g class="fa-group"><path class="fa-secondary" fill="currentColor" d="M478.71 364.58zm-22 6.11l-27.83-15.9a15.92 15.92 0 0 1-6.94-19.2A184 184 0 1 1 256 72c5.89 0 11.71.29 17.46.83-.74-.07-1.48-.15-2.23-.21-8.49-.69-15.23-7.31-15.23-15.83v-32a16 16 0 0 1 15.34-16C266.24 8.46 261.18 8 256 8 119 8 8 119 8 256s111 248 248 248c98 0 182.42-56.95 222.71-139.42-4.13 7.86-14.23 10.55-22 6.11z" opacity="0.4"></path><path class="fa-primary" fill="currentColor" d="M271.23 72.62c-8.49-.69-15.23-7.31-15.23-15.83V24.73c0-9.11 7.67-16.78 16.77-16.17C401.92 17.18 504 124.67 504 256a246 246 0 0 1-25 108.24c-4 8.17-14.37 11-22.26 6.45l-27.84-15.9c-7.41-4.23-9.83-13.35-6.2-21.07A182.53 182.53 0 0 0 440 256c0-96.49-74.27-175.63-168.77-183.38z"></path></g></svg>
+        </i>
+    </div>
+    <p 
+        class="unpack-notice line-normal px-1 py-0.75 bg-danger-100 border-1 border-solid border-danger-500 m-0 font-danger-800" 
+        style="position: fixed;top: 0;left: 50%;transform: translate(-50%, -1px);border-radius: 0 0 0.5rem 0.5rem;box-shadow: 0 0 8px rgba(0,0,0,0.05);z-index: 1000;"
+    >Search results may be incomplete until every card have been unpacked.</p>
     <script type="module">
         import {html, render} from 'https://unpkg.com/lit-html?module'
         const statusContainer = document.body.querySelector(".status-tracker");
@@ -44,27 +198,26 @@
         const unpackProgress = document.body.querySelector(".unpack-progress");
         const downloadTracker = document.body.querySelector(".download-tracker");
         const unpackTracker = document.body.querySelector(".unpack-tracker");
+        const unpackNotice = document.body.querySelector(".unpack-notice");
+        const cardContainer = document.body.querySelector(".card-container");
+        const searchInput = document.body.querySelector(".search");
+        const modal = document.body.querySelector(".modal");
+        const modalBg = document.body.querySelector(".modal-backdrop");
+        const actions = document.body.querySelector(".actions");
         const worker = new Worker("/ndjson-3/idb.js");
         let downloadTicks = 0;
         let unpackTicks = 0;
         let workerStarted = false;
+        const promises = {};
+        const noop = ()=>{};
+        let page = 1;
         worker.onmessage = (e) => {
             const { type, data, uid } = e.data;
             switch (type){
                 case "response":
-                    if (data < 310000 && !workerStarted){
-                        downloadTracker.style.display = "flex";
-                        unpackTracker.style.display = "flex";
-                        workerStarted = true;
-                        worker.postMessage({
-                            type: "ingest",
-                            data: {
-                                route: "/data.ndjson",
-                                table: "cards",
-                            }
-                        });
-                    } else if (data === 310000){
-                        statusContainer.remove();
+                    if (promises?.[uid]) {
+                        promises[uid](data);
+                        delete promises[uid];
                     }
                     break;
                 case "download-tick":
@@ -83,17 +236,37 @@
                 case "unpack-finished":
                     setTimeout(()=>{
                         statusContainer.remove();
+                        unpackNotice.remove();
                     }, 3000);
                     break;
                 case "ready":
-                    worker.postMessage({
-                        type: "count",
-                        data: {
-                            table: "cards",
-                            query: null,
-                            key: null,
+                    count("cards", null, null).then(data => {
+                        if (data < 310000 && !workerStarted){
+                            downloadTracker.style.opacity = "1";
+                            unpackTracker.style.opacity = "1";
+                            workerStarted = true;
+                            send(
+                                "ingest",
+                                {
+                                    route: "/data.ndjson",
+                                    table: "cards",
+                                }
+                            );
+                            setTimeout(async () => {
+                                const cards = await select("cards", 1, 30);
+                                const total = await count("cards");
+                                renderCards(cards, total);
+                            }, 1000);
+                        } else if (data === 310000){
+                            statusContainer.remove();
+                            unpackNotice.remove();
+                            (async () => {
+                                const cards = await select("cards", 1, 30);
+                                const total = await count("cards");
+                                renderCards(cards, total);
+                            })();
                         }
-                    });
+                    })
                     break;
                 default:
                     break;
@@ -110,8 +283,174 @@
                     event.returnValue = false;
                     return false;
                 }
+                else if (key === "escape"){
+                    closeModal();
+                }
             }
         };
+        function nextPage(){
+            page++;
+            renderDummyCards();
+            window.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: "smooth"
+            });
+            handleSearch();
+        }
+        function goBack(){
+            page--;
+            renderDummyCards();
+            window.scrollTo({
+                top: 0,
+                left: 0,
+                behavior: "smooth"
+            });
+            handleSearch();
+        }
+        function debounce(func, wait, immediate) {
+            let timeout;
+            return function () {
+                const context = this, args = arguments;
+                const later = function () {
+                    timeout = null;
+                    if (!immediate)
+                        func.apply(context, args);
+                };
+                const callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow)
+                    func.apply(context, args);
+            };
+        }
+        function renderCards(cards, totalResults){
+            if (!cards.length){
+                cardContainer.style.display = "block";
+                cardContainer.innerHTML = "No cards found.";
+            } else {
+                cardContainer.style.display = "grid";
+            }
+            const totalPages = Math.ceil(totalResults / 30);
+            const view = html`
+                ${cards.map(card => {
+                    return html`
+                        <div class="card" data-id="${card.id}" @click=${openModal} tabindex="0" aria-label="view ${card.name}">
+                            <i class="font-grey-500 spin" style="width: 36px;height: 36px;" flex="items-center justify-center">
+                                <svg style="width: 18px;height: 18px;" aria-hidden="true" focusable="false" data-prefix="fad" data-icon="spinner-third" class="svg-inline--fa fa-spinner-third fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g class="fa-group"><path class="fa-secondary" fill="currentColor" d="M478.71 364.58zm-22 6.11l-27.83-15.9a15.92 15.92 0 0 1-6.94-19.2A184 184 0 1 1 256 72c5.89 0 11.71.29 17.46.83-.74-.07-1.48-.15-2.23-.21-8.49-.69-15.23-7.31-15.23-15.83v-32a16 16 0 0 1 15.34-16C266.24 8.46 261.18 8 256 8 119 8 8 119 8 256s111 248 248 248c98 0 182.42-56.95 222.71-139.42-4.13 7.86-14.23 10.55-22 6.11z" opacity="0.4"></path><path class="fa-primary" fill="currentColor" d="M271.23 72.62c-8.49-.69-15.23-7.31-15.23-15.83V24.73c0-9.11 7.67-16.78 16.77-16.17C401.92 17.18 504 124.67 504 256a246 246 0 0 1-25 108.24c-4 8.17-14.37 11-22.26 6.45l-27.84-15.9c-7.41-4.23-9.83-13.35-6.2-21.07A182.53 182.53 0 0 0 440 256c0-96.49-74.27-175.63-168.77-183.38z"></path></g></svg>
+                            </i>
+                            <img class="card-img" onload="this.style.opacity = '1';" draggable="false" src="https://api.scryfall.com/cards/${card.id}?format=image&version=normal" alt="${card.name}" width="250" loading="lazy">
+                        </div>
+                    `;
+                })}
+            `;
+            render(view, cardContainer);
+            if (totalResults > 30){
+                actions.style.visibility = "visible";
+                const actionsView = html`
+                    <button .disabled=${(page === 1)} class="button -solid -primary -rounded mr-1" @click=${goBack}>Back</button>
+                    <button .disabled=${(page >= totalPages)} class="button -solid -primary -rounded" @click=${nextPage}>Next page</button>
+                `;
+                render(actionsView, actions);
+            } else {
+                actions.style.visibility = "hidden";
+            }
+        }
+        function renderDummyCards(){
+            const cards = Array.from(Array(15).keys());
+            const view = html`
+                ${cards.map(card => {
+                    return html`
+                        <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
+                            <div class="skeleton w-full h-full radius-0.25"></div>
+                        </div>
+                    `;
+                })}
+            `;
+            render(view, cardContainer);
+        }
+        function uid() {
+            return new Array(4)
+                .fill(0)
+                .map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16))
+                .join("-");
+        }
+        function send(type, data = null, resolve = noop) {
+            const messageUid = uid();
+            const message = {
+                type: type,
+                data: data,
+                uid: messageUid,
+            };
+            promises[messageUid] = resolve;
+            worker.postMessage(message);
+        }
+        function count(table, query = null, key = null) {
+            return new Promise((resolve) => {
+                send("count", {
+                    table: table,
+                    query: query,
+                    key: key,
+                }, resolve);
+            });
+        }
+        function search(table, query, key, page = 1, limit = null) {
+            return new Promise((resolve) => {
+                send("search", {
+                    table: table,
+                    key: key,
+                    query: query,
+                    limit: limit,
+                    page: page,
+                }, resolve);
+            });
+        }
+        const handleSearch = async () => {
+            let cards = [];
+            if (searchInput.value.length){
+                cards = await search("cards", searchInput.value, "name", page, 30);
+            } else {
+                cards = await select("cards", page, 30);
+            }
+            const totalResults = await count("cards", searchInput.value, "name");
+            renderCards(cards, totalResults);
+        }
+        const debounceInput = debounce(handleSearch, 600, false);
+        const handleInput = () => {
+            page = 1;
+            renderDummyCards();
+            debounceInput();
+        };
+        searchInput.addEventListener("input", handleInput);
+        function select(table, page = 1, limit = null) {
+            return new Promise((resolve) => {
+                send("select", {
+                    table: table,
+                    page: page,
+                    limit: limit,
+                }, resolve);
+            });
+        }
+        function closeModal(){
+            modal.classList.remove("visible");
+            const img = modal.querySelector("img");
+            img?.remove();
+        }
+        function openModal(e){
+            const target = e.currentTarget;
+            const id = target.dataset.id;
+            const img = document.createElement("img");
+            img.src = `https://api.scryfall.com/cards/${id}?format=image&version=png`;
+            img.width = 745;
+            img.style.opacity = "0";
+            img.className = "big-img"
+            img.onload = ()=>{
+                img.style.opacity = "1";
+            }
+            modal.appendChild(img);
+            modal.classList.add("visible");
+        }
+        modalBg.addEventListener("click", closeModal);
     </script>
 </body>
 </html>
