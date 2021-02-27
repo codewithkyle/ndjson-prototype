@@ -1,7 +1,6 @@
 importScripts("/ndjson-3/util.js");
 
 const DB_NAME = "demodb";
-
 class IDBWorker {
     constructor() {
         this.db = null;
@@ -42,7 +41,7 @@ class IDBWorker {
             case "done":
                 this.send("download-finished");
                 if (worker){
-                    worker.terminate();
+                    worker?.terminate();
                     this.workerPool[e.data.uid].status = "INSERTING";
                     if (!busy){
                         this.insertData();
@@ -151,19 +150,33 @@ class IDBWorker {
     async ingestData(data) {
         const { route, table } = data;
         const workerUid = uid();
-        const worker = new Worker("/ndjson-3/ndjson.js");
-        this.workerPool[workerUid] = {
-            worker: worker,
-            table: table,
-            rows: [],
-            busy: false,
-            status: "PARSING",
-        };
-        worker.onmessage = this.workerInbox.bind(this);
-        worker.postMessage({
-            url: route,
-            uid: workerUid,
-        });
+        try {
+            const worker = new Worker("/ndjson-3/ndjson.js");
+            this.workerPool[workerUid] = {
+                worker: worker,
+                table: table,
+                rows: [],
+                busy: false,
+                status: "PARSING",
+            };
+            worker.onmessage = this.workerInbox.bind(this);
+            worker.postMessage({
+                url: route,
+                uid: workerUid,
+            });
+        } catch (e){
+            console.error(e);
+            console.log("Using class fallback");
+            importScripts("/ndjson-3/stream-parser.js");
+            const parser = new StreamParser(route, workerUid, this.workerInbox.bind(this));
+            this.workerPool[workerUid] = {
+                worker: parser,
+                table: table,
+                rows: [],
+                busy: false,
+                status: "PARSING",
+            };
+        }
     }
     async purgeData() {
         // @ts-expect-error
