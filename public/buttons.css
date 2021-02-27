@@ -13,7 +13,8 @@
     transition: all 75ms ease-in-out;
     justify-content: center;
     align-items: center;
-    flex-flow: row nowrap
+    flex-flow: row nowrap;
+    position: relative;
 }
 
 html[state=soft-loading] .button[type=submit] {

@@ -52,23 +52,51 @@
             transition: all 150ms var(--ease-in-out);
         }
         .card{
+            padding: 0;
             display: inline-flex;
             justify-content: center;
             align-items: center;
             position: relative;
             overflow: hidden;
             box-shadow: var(--shadow-md);
-            aspect-ratio: 73/102;
             background-color: var(--white);
             border-radius: 0.5rem;
             cursor: zoom-in;
             transition: all 150ms var(--ease-out);
+            outline: none;
+            border: none;
+        }
+        .card::before{
+            content: "";
+            display: block;
+            width: 100%;
+            padding-bottom: 139.72%;
+        }
+        .card .spin{
+            position: absolute;
         }
         .card:hover,
         .card:focus-visible{
             transform: scale(1.05);
             box-shadow: var(--shadow-lg);
             transition: all 300ms var(--ease-in);
+            outline: none;
+            border: none;
+        }
+        .card.error{
+            border: 1px solid var(--danger-400);
+            background-color: var(--danger-100);
+            color: var(--danger-700);
+        }
+        .card.error .spin{
+            display: none !important;
+        }
+        .error-text{
+            display: none;
+            margin: 0;
+        }
+        .card.error .error-text{
+            display: inline-block;
         }
         .modal{
             position: fixed;
@@ -84,6 +112,7 @@
             visibility: hidden;
             pointer-events: none;
             transition: all 0ms 0ms linear;
+            overscroll-behavior: contain;
         }
         .modal.visible{
             opacity: 1;
@@ -111,6 +140,40 @@
         *{
             box-sizing: border-box;
         }
+        .card-container{
+            grid-template-columns: repeat(2, minmax(150px, 1fr));
+        }
+        .unpack-notice{
+            width: 100%;
+        }
+        @media (min-width: 768px){
+            .card-container{
+                grid-template-columns: repeat(3, minmax(150px, 1fr));
+            }
+        }
+        @media (min-width: 1024px){
+            .card-container{
+                grid-template-columns: repeat(4, minmax(150px, 1fr));
+            }
+            .unpack-notice{
+                width: auto;
+            }
+        }
+        @media (min-width: 1280px){
+            .card-container{
+                grid-template-columns: repeat(5, minmax(150px, 1fr));
+            }
+        }
+        @keyframes card{
+            from {
+                opacity: 0;
+                transform: translateY(2rem);
+            }
+            to{
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body class="bg-grey-200 w-screen h-screen m-0" style="overflow-x: hidden;">
@@ -132,52 +195,83 @@
     </div>
     <main class="max-w-full mx-auto" style="padding: 8rem 1rem 0rem;width: 1280px;">
         <input class="search mb-4" type="search" placeholder="Search cards...">
-        <div class="w-full card-container text-center font-xl font-grey-700" style="display: grid;gap: 1rem;grid-template-columns: repeat(5, minmax(150px, 1fr));">
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+        <div class="w-full card-container text-center font-xl font-grey-700" style="display: grid;gap: 1rem;">
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
-            <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                <div class="skeleton w-full h-full radius-0.25"></div>
+            <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                    <div class="skeleton w-full h-full radius-0.5"></div>
+                </div>
             </div>
+            
         </div>
     </main>
     <div class="actions block text-center pt-3 pb-4"></div>
@@ -188,9 +282,9 @@
         </i>
     </div>
     <p 
-        class="unpack-notice line-normal px-1 py-0.75 bg-danger-100 border-1 border-solid border-danger-500 m-0 font-danger-800" 
-        style="position: fixed;top: 0;left: 50%;transform: translate(-50%, -1px);border-radius: 0 0 0.5rem 0.5rem;box-shadow: 0 0 8px rgba(0,0,0,0.05);z-index: 1000;"
-    >Search results may be incomplete until every card have been unpacked.</p>
+        class="unpack-notice line-normal px-1 py-0.75 bg-danger-100 border-1 border-solid border-danger-500 m-0 font-danger-800 text-center" 
+        style="position: fixed;top: 0;left: 50%;transform: translate(-50%, -1px);border-radius: 0 0 0.5rem 0.5rem;box-shadow: 0 0 8px rgba(0,0,0,0.05);z-index: 1000;max-width: calc(100vw - 4rem);"
+    >Search results will be incomplete until every card has been unpacked.</p>
     <script type="module">
         import {html, render} from 'https://unpkg.com/lit-html?module'
         const statusContainer = document.body.querySelector(".status-tracker");
@@ -211,6 +305,12 @@
         const promises = {};
         const noop = ()=>{};
         let page = 1;
+        const audio = new Audio("/touch.ogg");
+        audio.volume = 0.01;
+        const preview = new Audio("/preview.ogg");
+        preview.volume = 0.07;
+        const close = new Audio("/close.ogg");
+        close.volume = 0.1;
         worker.onmessage = (e) => {
             const { type, data, uid } = e.data;
             switch (type){
@@ -226,7 +326,11 @@
                     break;
                 case "unpack-tick":
                     unpackTicks++;
-                    unpackProgress.innerHTML = `${Math.floor(unpackTicks / 310000 * 100)}%`;
+                    let unpackPercent = Math.floor(unpackTicks / 310000 * 100);
+                    if (unpackPercent === 0){
+                        unpackPercent = 1;
+                    }
+                    unpackProgress.innerHTML = `${unpackPercent}%`;
                     break;
                 case "download-finished":
                     setTimeout(()=>{
@@ -308,6 +412,9 @@
             });
             handleSearch();
         }
+        function touch(){
+            audio.play();
+        }
         function debounce(func, wait, immediate) {
             let timeout;
             return function () {
@@ -335,12 +442,13 @@
             const view = html`
                 ${cards.map(card => {
                     return html`
-                        <div class="card" data-id="${card.id}" @click=${openModal} tabindex="0" aria-label="view ${card.name}">
+                        <button class="card" data-id="${card.id}" @click=${openModal} aria-label="view ${card.name}" @mouseenter=${touch}>
                             <i class="font-grey-500 spin" style="width: 36px;height: 36px;" flex="items-center justify-center">
                                 <svg style="width: 18px;height: 18px;" aria-hidden="true" focusable="false" data-prefix="fad" data-icon="spinner-third" class="svg-inline--fa fa-spinner-third fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g class="fa-group"><path class="fa-secondary" fill="currentColor" d="M478.71 364.58zm-22 6.11l-27.83-15.9a15.92 15.92 0 0 1-6.94-19.2A184 184 0 1 1 256 72c5.89 0 11.71.29 17.46.83-.74-.07-1.48-.15-2.23-.21-8.49-.69-15.23-7.31-15.23-15.83v-32a16 16 0 0 1 15.34-16C266.24 8.46 261.18 8 256 8 119 8 8 119 8 256s111 248 248 248c98 0 182.42-56.95 222.71-139.42-4.13 7.86-14.23 10.55-22 6.11z" opacity="0.4"></path><path class="fa-primary" fill="currentColor" d="M271.23 72.62c-8.49-.69-15.23-7.31-15.23-15.83V24.73c0-9.11 7.67-16.78 16.77-16.17C401.92 17.18 504 124.67 504 256a246 246 0 0 1-25 108.24c-4 8.17-14.37 11-22.26 6.45l-27.84-15.9c-7.41-4.23-9.83-13.35-6.2-21.07A182.53 182.53 0 0 0 440 256c0-96.49-74.27-175.63-168.77-183.38z"></path></g></svg>
                             </i>
-                            <img class="card-img" onload="this.style.opacity = '1';" draggable="false" src="https://api.scryfall.com/cards/${card.id}?format=image&version=normal" alt="${card.name}" width="250" loading="lazy">
-                        </div>
+                            <img onerror="this.parentElement.classList.add('error');this.remove();" class="card-img" onload="this.style.opacity = '1';" draggable="false" src="https://api.scryfall.com/cards/${card.id}?format=image&version=normal" alt="${card.name}" width="250" loading="lazy">
+                            <p class="error-text w-full text-center">Missing card image.</p>
+                        </button>
                     `;
                 })}
             `;
@@ -348,8 +456,8 @@
             if (totalResults > 30){
                 actions.style.visibility = "visible";
                 const actionsView = html`
-                    <button .disabled=${(page === 1)} class="button -solid -primary -rounded mr-1" @click=${goBack}>Back</button>
-                    <button .disabled=${(page >= totalPages)} class="button -solid -primary -rounded" @click=${nextPage}>Next page</button>
+                    <button .disabled=${(page === 1)} class="button -outline -primary -rounded mr-1" @click=${goBack}>Back</button>
+                    <button .disabled=${(page >= totalPages)} class="button -outline -primary -rounded" @click=${nextPage}>Next</button>
                 `;
                 render(actionsView, actions);
             } else {
@@ -361,8 +469,10 @@
             const view = html`
                 ${cards.map(card => {
                     return html`
-                        <div class="w-full bg-white border-1 border-solid border-grey-400 shadow-md radius-0.5 p-0.25" style="aspect-ratio: 53/74;">
-                            <div class="skeleton w-full h-full radius-0.25"></div>
+                        <div class="w-full bg-white relative border-1 border-solid border-grey-400 shadow-md radius-0.5 ar-53:74">
+                            <div class="t-0 l-0 absolute w-full h-full p-0.5">
+                                <div class="skeleton w-full h-full radius-0.5"></div>
+                            </div>
                         </div>
                     `;
                 })}
@@ -434,7 +544,13 @@
         function closeModal(){
             modal.classList.remove("visible");
             const img = modal.querySelector("img");
-            img?.remove();
+            if (img){
+                img.remove();
+                close.play();
+                const card = document.body.querySelector(`.card[data-id="${img.dataset.id}"]`);
+                document.activeElement.blur();
+                card.focus();
+            }
         }
         function openModal(e){
             const target = e.currentTarget;
@@ -443,9 +559,13 @@
             img.src = `https://api.scryfall.com/cards/${id}?format=image&version=png`;
             img.width = 745;
             img.style.opacity = "0";
-            img.className = "big-img"
+            img.className = "big-img";
+            img.dataset.id = id;
             img.onload = ()=>{
-                img.style.opacity = "1";
+                document.activeElement.blur();
+                img.focus();
+                preview.play();
+                img.style.animation = "card 300ms var(--ease-in) forwards";
             }
             modal.appendChild(img);
             modal.classList.add("visible");
