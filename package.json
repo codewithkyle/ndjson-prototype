@@ -1,10 +1,15 @@
 {
-  "scripts": {
-    "test": "node ./server.js",
-    "brixi": "brixi"
-  },
-  "dependencies": {
-    "brixi": "^0.3.1",
-    "express": "^4.17.1"
-  }
+    "scripts": {
+        "test": "node ./server.js",
+        "brixi": "brixi",
+        "deploy": "run-s deploy:*",
+        "deploy:claim": "ssh ubuntu@192.168.1.104 sudo chown -R ubuntu:ubuntu /var/www/ndjson-demo/",
+        "deploy:deploy": "rsync -azh --delete-after -e \"ssh -o StrictHostKeyChecking=no\" ./ ubuntu@192.168.1.104:/var/www/ndjson-demo/",
+        "deploy:reboot": "ssh ubuntu@192.168.1.104 /home/ubuntu/.nvm/versions/node/v16.13.1/bin/pm2 restart 3"
+    },
+    "dependencies": {
+        "brixi": "^0.3.3",
+        "express": "^4.17.2",
+        "npm-run-all": "^4.1.5"
+    }
 }
